@@ -153,4 +153,4 @@ const campaignSchema = new mongoose.Schema(
 
 campaignSchema.index({ owner: 1, updatedAt: -1 });
 
-module.exports = mongoose.model('Campaign', campaignSchema);
+module.exports = mongoose.models.Campaign || mongoose.model('Campaign', campaignSchema);
