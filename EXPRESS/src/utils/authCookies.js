@@ -27,7 +27,7 @@ function isProductionEnv() {
   return process.env.NODE_ENV === 'production';
 }
 
-function getCookieSameSite(req) {
+function getCookieSameSite() {
   const configuredSameSite = getConfiguredCookieSameSite();
 
   if (configuredSameSite) {
@@ -73,8 +73,9 @@ function getCsrfCookieOptions(req) {
 }
 
 function getClearCookieOptions(req) {
-  const { maxAge, ...options } = getBaseCookieOptions(req);
-  return options;
+  return {
+    ...getBaseCookieOptions(req),
+  };
 }
 
 function getTokenMaxAgeMs() {

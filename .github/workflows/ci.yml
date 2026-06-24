@@ -5,10 +5,20 @@ on:
     branches:
       - master
       - production
+    paths:
+      - "EXPRESS/**"
+      - "REACT/**"
+      - "compose.yml"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches:
       - master
       - production
+    paths:
+      - "EXPRESS/**"
+      - "REACT/**"
+      - "compose.yml"
+      - ".github/workflows/ci.yml"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -25,11 +35,9 @@ jobs:
         app:
           - name: EXPRESS
             path: EXPRESS
-            install_command: npm install
             test_command: npm test
           - name: REACT
             path: REACT
-            install_command: npm install
             test_command: npm test
 
     steps:
@@ -40,9 +48,16 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.app.path }}/package-lock.json
 
       - name: Install dependencies for ${{ matrix.app.name }}
-        run: ${{ matrix.app.install_command }}
+        run: npm install
+        working-directory: ${{ matrix.app.path }}
+
+      - name: Install Rollup native binary for Express
+        if: matrix.app.name == 'EXPRESS'
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu
         working-directory: ${{ matrix.app.path }}
 
       - name: Run tests for ${{ matrix.app.name }}

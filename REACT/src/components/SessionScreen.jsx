@@ -154,6 +154,9 @@ function SessionScreen({
   }, [mobileMenuOpen])
 
   useEffect(() => {
+    const cachedSpeechUrls = cachedSpeechUrlMapRef.current
+    const pendingSpeechRequests = pendingSpeechRequestMapRef.current
+
     return () => {
       if (scrollTimeoutRef.current) {
         window.clearTimeout(scrollTimeoutRef.current)
@@ -168,12 +171,12 @@ function SessionScreen({
         activeAudioRef.current = null
       }
 
-      for (const audioUrl of cachedSpeechUrlMapRef.current.values()) {
+      for (const audioUrl of cachedSpeechUrls.values()) {
         URL.revokeObjectURL(audioUrl)
       }
 
-      cachedSpeechUrlMapRef.current.clear()
-      pendingSpeechRequestMapRef.current.clear()
+      cachedSpeechUrls.clear()
+      pendingSpeechRequests.clear()
     }
   }, [])
 
@@ -183,7 +186,7 @@ function SessionScreen({
     }
 
     void prefetchSpeechForMessage(latestAssistantMessage._id)
-  }, [campaign?._id, latestAssistantMessage])
+  }, [campaign?._id, latestAssistantMessage, prefetchSpeechForMessage])
 
   useEffect(() => {
     if (!latestAssistantMessageId) {

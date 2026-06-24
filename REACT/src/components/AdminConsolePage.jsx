@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Activity, ShieldCheck, Users } from 'lucide-react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { fetchAdminMetrics, fetchAdminUsers, logoutAdminSession } from '../services/adminApi'
@@ -11,11 +12,7 @@ function AdminConsolePage({ adminSession, view, onAdminLogout }) {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
 
-  useEffect(() => {
-    void loadViewData()
-  }, [view])
-
-  async function loadViewData() {
+  const loadViewData = useCallback(async () => {
     setLoading(true)
     setErrorMessage('')
 
@@ -38,7 +35,11 @@ function AdminConsolePage({ adminSession, view, onAdminLogout }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [navigate, onAdminLogout, view])
+
+  useEffect(() => {
+    void loadViewData()
+  }, [loadViewData])
 
   async function handleLogout() {
     try {

@@ -1,0 +1,56 @@
+name: Lint Checks
+
+on:
+  push:
+    branches:
+      - master
+      - production
+    paths:
+      - "EXPRESS/**"
+      - "REACT/**"
+      - ".github/workflows/lint.yml"
+  pull_request:
+    branches:
+      - master
+      - production
+    paths:
+      - "EXPRESS/**"
+      - "REACT/**"
+      - ".github/workflows/lint.yml"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        app:
+          - name: EXPRESS
+            path: EXPRESS
+          - name: REACT
+            path: REACT
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ${{ matrix.app.path }}/package-lock.json
+
+      - name: Install dependencies for ${{ matrix.app.name }}
+        run: npm install
+        working-directory: ${{ matrix.app.path }}
+
+      - name: Run ESLint for ${{ matrix.app.name }}
+        run: npm run lint
+        working-directory: ${{ matrix.app.path }}

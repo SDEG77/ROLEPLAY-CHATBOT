@@ -6,6 +6,7 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "admin:keygen": "node scripts/generateAdminKey.js",
+    "lint": "eslint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:unit": "vitest run test/unit",
@@ -26,6 +27,9 @@
     "mongoose": "^8.5.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.5.0",
+    "globals": "^17.7.0",
     "mongodb-memory-server": "^10.1.4",
     "nodemon": "^3.1.0",
     "supertest": "^7.1.1",

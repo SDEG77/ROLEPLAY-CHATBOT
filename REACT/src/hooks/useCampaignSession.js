@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   createCampaign as createCampaignRequest,
   deleteCampaign as deleteCampaignRequest,
@@ -42,22 +42,6 @@ export function useCampaignSession(userId, onAuthFailure) {
   const [errorViewerOpen, setErrorViewerOpen] = useState(false)
   const chatViewportRef = useRef(null)
 
-  useEffect(() => {
-    setCampaign(null)
-    setCampaigns([])
-    setEditingCampaignId(null)
-    setCampaignForm(defaultCampaignForm)
-    setDraft('')
-    setInventoryOpen(false)
-    closeInventoryEditor()
-    void refreshCampaigns()
-    const campaignId = window.localStorage.getItem(getStorageKey(userId))
-
-    if (campaignId) {
-      void loadCampaign(campaignId)
-    }
-  }, [userId])
-
   const latestAssistantMessage = useMemo(() => {
     if (!campaign?.messages?.length) {
       return null
@@ -71,7 +55,7 @@ export function useCampaignSession(userId, onAuthFailure) {
     [latestAssistantMessage],
   )
 
-  async function refreshCampaigns() {
+  const refreshCampaigns = useCallback(async () => {
     setCampaignsLoading(true)
 
     try {
@@ -85,9 +69,9 @@ export function useCampaignSession(userId, onAuthFailure) {
     } finally {
       setCampaignsLoading(false)
     }
-  }
+  }, [onAuthFailure])
 
-  async function loadCampaign(campaignId) {
+  const loadCampaign = useCallback(async (campaignId) => {
     setLoading(true)
 
     try {
@@ -106,7 +90,25 @@ export function useCampaignSession(userId, onAuthFailure) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [onAuthFailure, userId])
+
+  useEffect(() => {
+    setCampaign(null)
+    setCampaigns([])
+    setEditingCampaignId(null)
+    setCampaignForm(defaultCampaignForm)
+    setDraft('')
+    setInventoryOpen(false)
+    setEditingInventoryId(null)
+    setInventoryForm(createEmptyInventoryForm())
+    setInventoryEditorOpen(false)
+    void refreshCampaigns()
+    const campaignId = window.localStorage.getItem(getStorageKey(userId))
+
+    if (campaignId) {
+      void loadCampaign(campaignId)
+    }
+  }, [loadCampaign, refreshCampaigns, userId])
 
   async function saveCampaign(event) {
     event.preventDefault()
@@ -177,7 +179,7 @@ export function useCampaignSession(userId, onAuthFailure) {
         if (nextCampaignId) {
           await loadCampaign(nextCampaignId)
         } else {
-          window.localStorage.removeItem(STORAGE_KEY)
+          window.localStorage.removeItem(getStorageKey(userId))
           setCampaign(null)
           setDraft('')
         }
