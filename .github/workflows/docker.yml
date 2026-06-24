@@ -1,0 +1,59 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - master
+      - production
+    paths:
+      - "EXPRESS/**"
+      - "REACT/**"
+      - "compose.yml"
+      - ".github/workflows/docker.yml"
+  pull_request:
+    branches:
+      - master
+      - production
+    paths:
+      - "EXPRESS/**"
+      - "REACT/**"
+      - "compose.yml"
+      - ".github/workflows/docker.yml"
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  docker:
+    name: Docker Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Setup Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Express image
+        run: docker build -t express-app ./EXPRESS
+
+      - name: Build React image
+        run: docker build -t react-app ./REACT
+
+      - name: Check compose
+        run: docker compose -f compose.yml config
+
+      - name: Sync production
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' && success()
+        run: |
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+          git fetch origin
+
+          git checkout production
+          git merge origin/master --no-edit
+          git push origin production

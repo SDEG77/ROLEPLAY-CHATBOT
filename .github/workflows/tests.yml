@@ -1,4 +1,4 @@
-name: Lint
+name: Tests
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
     paths:
       - "EXPRESS/**"
       - "REACT/**"
-      - ".github/workflows/lint.yml"
+      - ".github/workflows/tests.yml"
   pull_request:
     branches:
       - master
@@ -16,14 +16,14 @@ on:
     paths:
       - "EXPRESS/**"
       - "REACT/**"
-      - ".github/workflows/lint.yml"
+      - ".github/workflows/tests.yml"
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  lint:
-    name: ${{ matrix.app.name }} Lint
+  test:
+    name: ${{ matrix.app.name }} Test
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -34,8 +34,10 @@ jobs:
         app:
           - name: EXPRESS
             path: EXPRESS
+            test_command: npm test
           - name: REACT
             path: REACT
+            test_command: npm test
 
     steps:
       - name: Checkout
@@ -52,6 +54,11 @@ jobs:
         run: npm install
         working-directory: ${{ matrix.app.path }}
 
-      - name: Run lint
-        run: npm run lint
+      - name: Add Rollup binary
+        if: matrix.app.name == 'EXPRESS'
+        run: npm install --no-save @rollup/rollup-linux-x64-gnu
+        working-directory: ${{ matrix.app.path }}
+
+      - name: Run tests
+        run: ${{ matrix.app.test_command }}
         working-directory: ${{ matrix.app.path }}
